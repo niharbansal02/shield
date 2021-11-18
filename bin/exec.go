@@ -3,9 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
-
 	//"golang.org/x/net/http2"
 	//"golang.org/x/net/http2/h2c"
 	"net"
@@ -25,6 +22,10 @@ func main() {
 
 func startTestHTTPServer(port, statusCode int, content string) (ts *httptest.Server) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.Method)
+		fmt.Println(r.URL)
+		fmt.Println(r.Proto)
+
 		w.Header().Set("Content-type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(Data{Fruit: "12"}); err != nil {
@@ -38,8 +39,7 @@ func startTestHTTPServer(port, statusCode int, content string) (ts *httptest.Ser
 	ts = &httptest.Server{
 		Listener: listener,
 		Config: &http.Server{
-			Handler:      h2c.NewHandler(handler, &http2.Server{}),
-			//Handler:      handler,
+			Handler:      handler,
 			ReadTimeout:  time.Second,
 			WriteTimeout: time.Second,
 			IdleTimeout:  time.Second,
