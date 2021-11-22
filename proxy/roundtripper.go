@@ -1,7 +1,10 @@
 package proxy
 
 import (
+	"bytes"
 	"crypto/tls"
+	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"time"
@@ -38,7 +41,16 @@ func (t *h2cTransportWrapper) RoundTrip(req *http.Request) (*http.Response, erro
 		transport = t.grpcTransport
 	}
 
-	return transport.RoundTrip(req)
+	resp, err := transport.RoundTrip(req)
+	if err != nil {
+		return resp, err
+	}
+
+	b, err := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(b))
+	resp.Body = ioutil.NopCloser(bytes.NewReader(b))
+
+	return resp, nil
 }
 
 func NewH2cRoundTripper(log log.Logger) http.RoundTripper {
